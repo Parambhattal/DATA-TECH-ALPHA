@@ -75,4 +75,11 @@ It serves as a **one-stop solution** for students, developers, educators, and co
 ---
 
 ## 📁 Folder Structure
-
+datatechalpha/
+├── frontend/ # React.js frontend
+│ ├── src/
+│ └── public/
+├── backend/ # Node.js API or serverless functions
+├── docs/ # Documentation, diagrams
+├── assets/ # Images, banners
+└── README.md
