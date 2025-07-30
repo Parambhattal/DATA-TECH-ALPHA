@@ -1,0 +1,286 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useCourse } from '../contexts/CourseContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Video, Clock, Play, Plus, X, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import VideoUploader from '../components/videos/VideoUploader';
+import { AppwriteVideo, VideoLecture, isAppwriteVideo } from '../types/video.types';
+import { databases, Query } from '../Services/appwrite';
+
+const VideoLectures: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>();
+  const { course, setSelectedVideo } = useCourse();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [videoLectures, setVideoLectures] = useState<VideoLecture[]>([]);
+  
+  const isTeacher = user?.role === 'teacher';
+
+  const extractYoutubeId = (urlOrId: string) => {
+    if (!urlOrId) return null;
+    
+    if (urlOrId.includes('youtube.com/watch?v=')) {
+      return urlOrId.split('v=')[1].split('&')[0];
+    }
+    if (urlOrId.includes('youtu.be/')) {
+      return urlOrId.split('youtu.be/')[1].split('?')[0];
+    }
+    return urlOrId;
+  };
+
+  const fetchVideos = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Get local videos
+      const localVideos = course?.videoLectures?.map(video => ({
+        ...video,
+        type: 'local' as const,
+        url: `https://www.youtube.com/watch?v=${video.youtubeId}`,
+        videoId: video.id,
+        createdAt: new Date().toISOString()
+      })) || [];
+      
+      // Initialize with local videos first
+      setVideoLectures(localVideos);
+      
+      try {
+        // Fetch videos from Appwrite
+        if (!courseId) return;
+        
+        const response = await databases.listDocuments(
+          '68261b6a002ba6c3b584', // Database ID
+          '685457d5000a277435ef',  // Videos collection ID
+          [
+            Query.equal('courseId', courseId),
+            Query.equal('isPublished', true)
+          ]
+        );
+        
+        const appwriteVideos = response.documents.map((doc: any) => ({
+          ...doc,
+          videoId: doc.$id,
+          type: doc.type as 'youtube' | 'upload',
+          escription: doc.escription || ''
+        }));
+        
+        // Combine and sort by creation date (newest first)
+        const allVideos = [
+          ...localVideos,
+          ...appwriteVideos
+        ].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        setVideoLectures(allVideos);
+      } catch (err) {
+        console.error('Error fetching videos from Appwrite:', err);
+        // Continue with just local videos if Appwrite fetch fails
+      }
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error processing videos:', err);
+      setError('Failed to load videos. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [course, courseId]);
+
+  useEffect(() => {
+    if (!course) {
+      const timer = setTimeout(() => {
+        if (!course) {
+          setError('Course data not available');
+          setLoading(false);
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      fetchVideos();
+    }
+  }, [course, fetchVideos]);
+
+  const handleVideoSelect = (video: VideoLecture) => {
+    if (isAppwriteVideo(video)) {
+      const videoId = video.type === 'youtube' ? extractYoutubeId(video.url) : video.url;
+      if (!videoId) {
+        setError('Invalid video ID');
+        return;
+      }
+      setSelectedVideo?.(videoId);
+      navigate(`/courses/${courseId}/videos/play`, { 
+        state: { 
+          videoId,
+          from: 'lectures',
+          videoType: video.type,
+          videoData: video
+        } 
+      });
+    } else {
+      const cleanId = extractYoutubeId(video.youtubeId);
+      if (!cleanId) {
+        setError('Invalid video ID');
+        return;
+      }
+      setSelectedVideo?.(cleanId);
+      navigate(`/courses/${courseId}/videos/play`, { 
+        state: { 
+          videoId: cleanId,
+          from: 'lectures',
+          videoType: 'youtube',
+          videoData: video
+        } 
+      });
+    }
+  };
+
+  const handleUploadSuccess = useCallback(() => {
+    setShowUploadForm(false);
+    fetchVideos();
+  }, [fetchVideos]);
+
+  if (loading && !videoLectures.length) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (error && !videoLectures.length) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+          Error Loading Videos
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Video Lectures
+        </h1>
+        {isTeacher && (
+          <button
+            onClick={() => setShowUploadForm(true)}
+            className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Video
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-200 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showUploadForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-8"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 relative">
+              <button
+                onClick={() => setShowUploadForm(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h2 className="text-xl font-semibold mb-4">Upload New Video</h2>
+              <VideoUploader 
+                courseId={courseId || ''} 
+                onUploadSuccess={handleUploadSuccess} 
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {videoLectures.length === 0 ? (
+        <div className="text-center py-12">
+          <Video className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No videos available
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            {isTeacher 
+              ? 'Upload your first video to get started.' 
+              : 'Check back later for video content.'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {videoLectures.map((video) => (
+            <motion.div
+              key={isAppwriteVideo(video) ? video.videoId : video.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => handleVideoSelect(video)}
+            >
+              <div className="relative pt-[56.25%] bg-gray-100 dark:bg-gray-700">
+                {isAppwriteVideo(video) && video.thumbnailUrl ? (
+                  <img
+                    src={video.thumbnailUrl}
+                    alt={video.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                    <Play className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {isAppwriteVideo(video) && video.duration 
+                    ? formatDuration(video.duration)
+                    : video.duration || '0:00'}
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 mb-1">
+                  {video.title}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                  {isAppwriteVideo(video) ? video.escription : video.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Helper function to format duration in seconds to MM:SS
+function formatDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+export default VideoLectures;
