@@ -16,7 +16,7 @@ const InstructorsPage: React.FC = () => {
       courses: ['Aptitude', 'Reasoning for Amca', 'Placement Preparation for Companies'],
       rating: '4.9',
       email: 'rajesh.sharma@datatech.edu',
-      linkedin: 'https://linkedin.com/in/rajesh-sharma',
+      linkedin: 'https://linkedin.com',
       achievements: [
         '100+ selections in SSC CGL 2023',
         'Author of "Quant Shortcuts Made Easy"',
@@ -33,7 +33,7 @@ const InstructorsPage: React.FC = () => {
       courses: ['Aptitude', 'Data Science', 'Python for Beginners', 'Placement Prep'],
       rating: '4.8',
       email: 'imranahmadyashi@gmail.com',
-      linkedin: 'https://linkedin.com/in/mohd-ahmad',
+      linkedin: 'https://linkedin.com',
       achievements: [
         'Senior Aptitude Trainer at Chandigarh University',
         'Data Science Mentor at DataTech Alpha Pvt Ltd',

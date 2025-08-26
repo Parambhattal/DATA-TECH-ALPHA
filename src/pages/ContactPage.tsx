@@ -325,7 +325,7 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-white">Phone</h3>
-                    <p className="text-blue-100 hover:text-white transition-colors">+91 9927460199</p>
+                    <p className="text-blue-100 hover:text-white transition-colors">+91 8958640529</p>
                     <p className="text-blue-100/80 text-sm">Mon - Sun, 9:00 AM - 6:00 PM</p>
                   </div>
                 </div>
