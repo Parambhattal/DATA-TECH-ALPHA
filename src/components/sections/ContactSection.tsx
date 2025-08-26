@@ -170,7 +170,7 @@ const ContactSection: React.FC = () => {
               <div>
                 <h4 className="font-bold text-lg">Call Us</h4>
                 <p className="text-dark-500 dark:text-dark-300">
-                  +91 9528720129<br />
+                  +91 9927460199<br />
                   Mon-SUN, 9am-6pm EST
                 </p>
               </div>

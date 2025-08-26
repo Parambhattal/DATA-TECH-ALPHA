@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Razorpay from 'razorpay';
 import { savePaymentToAppwrite, type SavePaymentParams } from '../../lib/appwrite';
 
-// Ensure we're using live keys in production
+// Load environment variables
 const isProduction = process.env.NODE_ENV === 'production';
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || '';
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || '';
@@ -116,13 +116,6 @@ interface ApiResponse<T> {
   code?: string;
   description?: string;
   message?: string;
-}
-
-interface ErrorResponse {
-  success: boolean;
-  error: string;
-  code?: string;
-  description?: string;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ApiResponse<RazorpayOrder>>) {

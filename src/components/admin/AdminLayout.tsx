@@ -42,11 +42,43 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, children }) => {
 import { useAuth } from '../../contexts/AuthContext';
 
 const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleChat, isChatOpen } = useChat();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('AdminLayout mounted', { 
+      user, 
+      isLoading, 
+      pathname: location.pathname,
+      hasChildren: !!children,
+      windowLocation: window.location.href
+    });
+  }, [user, isLoading, location.pathname, children]);
+
+  // Test component to verify rendering
+  const TestBanner = () => (
+    <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+      <p className="font-bold">Admin Layout Debug</p>
+      <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+        <div>
+          <span className="font-semibold">Current Path:</span> {location.pathname}
+        </div>
+        <div>
+          <span className="font-semibold">User Status:</span> {user ? 'Logged In' : 'Not Logged In'}
+        </div>
+        <div>
+          <span className="font-semibold">User Role:</span> {user?.role || 'N/A'}
+        </div>
+        <div>
+          <span className="font-semibold">Children Count:</span> {React.Children.count(children)}
+        </div>
+      </div>
+    </div>
+  );
 
   const handleToggleChat = useCallback(() => {
     toggleChat();
@@ -76,6 +108,7 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
   const navigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Internships', to: '/admin/internships', icon: Briefcase },
+    { name: 'Intern Exams', to: '/admin/intern-exams', icon: FileText },
     { name: 'Teachers', to: '/admin/teachers', icon: Users },
     { name: 'Students', to: '/admin/students', icon: Users },
     { name: 'Courses', to: '/admin/courses', icon: BookOpen },
@@ -87,21 +120,31 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
     { name: 'Notes Review', to: '/admin/notes-review', icon: FileText },
   ];
 
+  // Debug information
+  useEffect(() => {
+    console.log('AdminLayout debug:', {
+      path: window.location.pathname,
+      hasChildren: !!children,
+      userRole: user?.role,
+      isAuthenticated
+    });
+  }, [location.pathname, children, user, isAuthenticated]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header onToggleChat={handleToggleChat} />
       <div className="flex-1 flex pt-16">
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-50 flex lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
-        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-dark-800">
-          <div className="absolute top-0 right-0 -mr-12 pt-2">
-            <button
-              type="button"
-              className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span className="sr-only">Close sidebar</span>
+        {/* Mobile sidebar */}
+        <div className={`fixed inset-0 z-50 flex lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
+          <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-dark-800">
+            <div className="absolute top-0 right-0 -mr-12 pt-2">
+              <button
+                type="button"
+                className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="sr-only">Close sidebar</span>
               <X className="h-6 w-6 text-white" aria-hidden="true" />
             </button>
           </div>

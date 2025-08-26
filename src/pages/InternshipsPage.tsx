@@ -301,12 +301,14 @@ const InternshipsPage: React.FC = () => {
                         <InternshipCard internship={internship} />
                       </div>
                     ))}
-                    <style jsx global>{`
-                      @keyframes fadeIn {
-                        from { opacity: 0; transform: translateY(10px); }
-                        to { opacity: 1; transform: translateY(0); }
-                      }
-                    `}</style>
+                    <style jsx={"true"} global={"true"}>
+                      {`
+                        @keyframes fadeIn {
+                          from { opacity: 0; transform: translateY(10px); }
+                          to { opacity: 1; transform: translateY(0); }
+                        }
+                      `}
+                    </style>
                   </div>
                 ) : (
                   <div className="text-center py-16">

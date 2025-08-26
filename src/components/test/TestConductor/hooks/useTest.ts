@@ -61,42 +61,52 @@ interface TestResults {
   }>;
 }
 
-// Mock test data - In a real app, this would come from an API
-const MOCK_TEST: Test = {
-  id: 'test-1',
-  title: 'Sample Test',
-  description: 'This is a sample test description',
-  instructions: [
-    'Answer all questions',
-    'No negative marking',
-    'You have 30 minutes to complete the test',
-  ],
-  duration: 30 * 60, // 30 minutes in seconds
-  totalQuestions: 5,
-  passingScore: 60,
-  negativeMarking: false,
-  negativeMarksPerWrongAnswer: 0,
-  totalMarks: 100,
-  passingMarks: 60,
-  questions: [
-    {
-      id: 'q1',
-      text: 'What is the capital of France?',
-      options: [
-        { id: 'a', text: 'London' },
-        { id: 'b', text: 'Paris' },
-        { id: 'c', text: 'Berlin' },
-        { id: 'd', text: 'Madrid' },
-      ],
-      correctAnswer: 'b',
-      marks: 20,
-      explanation: 'Paris is the capital of France.',
-      difficulty: 'easy',
-      category: 'Geography',
-    },
-    // Add more questions as needed
-  ],
-};
+// Import test data loading utility
+import { loadTestData } from '../utils/testLoader';
+  
+  const MOCK_TEST: Test = {
+    id: 'test-1',
+    title: 'Sample Test',
+    description: 'This is a sample test description',
+    instructions: [
+      'Read each question carefully',
+      'Select the best answer',
+      'You can mark questions for review',
+      'Time limit: 60 minutes'
+    ],
+    duration: 3600, // 1 hour in seconds
+    totalQuestions: 1,
+    passingScore: 70,
+    negativeMarking: false,
+    negativeMarksPerWrongAnswer: 0,
+    totalMarks: 100,
+    passingMarks: 70,
+    sections: [
+      {
+        id: 'section-1',
+        name: 'General Knowledge',
+        questions: [
+          {
+            id: 'q1',
+            text: 'What is the capital of France?',
+            options: [
+              { id: 'a', text: 'London' },
+              { id: 'b', text: 'Paris' },
+              { id: 'c', text: 'Berlin' },
+              { id: 'd', text: 'Madrid' }
+            ],
+            correctAnswer: 'b',
+            marks: 20,
+            explanation: 'Paris is the capital of France.',
+            difficulty: 'easy',
+            category: 'Geography'
+          }
+        ],
+        totalMarks: 20,
+        passingMarks: 10
+      }
+    ]
+  };
 
 export const useTest = (testId: string) => {
   const { user } = useAuth();
@@ -157,13 +167,15 @@ export const useTest = (testId: string) => {
       try {
         setLoading(true);
         
-        // In a real app, fetch test data from API
-        // const testData = await databases.getDocument('tests', testId);
-        // setTest(testData);
+        // Load test data from file
+        const testData = loadTestData(testId);
         
-        // For now, use mock data
-        setTest(MOCK_TEST);
-        setTimeLeft(MOCK_TEST.duration);
+        if (testData) {
+          setTest(testData);
+          setTimeLeft(testData.duration);
+        } else {
+          throw new Error('Test not found');
+        }
       } catch (err) {
         console.error('Error loading test:', err);
         setError(err instanceof Error ? err : new Error('Failed to load test'));

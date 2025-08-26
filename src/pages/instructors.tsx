@@ -15,7 +15,6 @@ const InstructorsPage: React.FC = () => {
       students: '4,000+',
       courses: ['Aptitude', 'Reasoning for Amca', 'Placement Preparation for Companies'],
       rating: '4.9',
-      image: 'https://i.postimg.cc/t44bw64v/60b9697a-6900-471b-bc5a-9a0e293b4ca0.jpg',
       email: 'rajesh.sharma@datatech.edu',
       linkedin: 'https://linkedin.com/in/rajesh-sharma',
       achievements: [
@@ -33,7 +32,6 @@ const InstructorsPage: React.FC = () => {
       students: '3,500+',
       courses: ['Aptitude', 'Data Science', 'Python for Beginners', 'Placement Prep'],
       rating: '4.8',
-      image: 'https://i.postimg.cc/2jdMF57H/e24cbd23-2947-4ea8-9a10-35ce778c4e46.jpg',
       email: 'imranahmadyashi@gmail.com',
       linkedin: 'https://linkedin.com/in/mohd-ahmad',
       achievements: [
@@ -53,7 +51,6 @@ const InstructorsPage: React.FC = () => {
       students: 'B.Tech Year Student',
       techSkills: ['MERN Stack', 'Python (Flask/Django)', 'MongoDB & Firebase', 'React Native', 'TypeScript', 'REST APIs', 'Docker', 'Git/GitHub', 'Fullstack Developer'],
       rating: '4.97',
-      image: 'https://i.postimg.cc/C1SQyLrm/IMG-3422.jpg',
       email: 'parambhattall@gmail.com',
       linkedin: 'https://linkedin.com/in/param-bhattal',
       achievements: [
@@ -110,21 +107,8 @@ const InstructorsPage: React.FC = () => {
               className="bg-white dark:bg-dark-800 rounded-2xl shadow-md overflow-hidden"
             >
               <div className="flex flex-col md:flex-row">
-                {/* Instructor Image */}
-                <div className="md:w-1/3 relative">
-                  <img 
-                    src={instructor.image} 
-                    alt={instructor.name} 
-                    className="w-full h-full object-cover min-h-64"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                    <h3 className="text-2xl font-bold text-white">{instructor.name}</h3>
-                    <p className="text-primary-300">{instructor.role}</p>
-                  </div>
-                </div>
-                
                 {/* Instructor Details */}
-                <div className="md:w-2/3 p-8">
+                <div className="w-full p-8">
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <div className="flex items-center mb-2">

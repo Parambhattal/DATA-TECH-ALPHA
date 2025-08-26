@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Preloader from './ui/Preloader';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode | ((props: { isAuthenticated: boolean }) => ReactNode);
   requiredRole?: 'admin' | 'subadmin' | 'teacher' | 'user';
 }
 
@@ -118,9 +118,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   // If authenticated and has required role (or no role required), render the protected route
-  if (isAuthenticated && (!requiredRole || hasRequiredRole())) {
+  if (isAuthenticated && hasRequiredRole() && !isLoading && isInitialized) {
     console.log('[ProtectedRoute] Rendering protected route');
-    return <>{children}</>;
+    return <>{typeof children === 'function' ? children({ isAuthenticated: true }) : children}</>;
   }
 
   // Fallback in case something goes wrong

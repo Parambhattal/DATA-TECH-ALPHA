@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './Services/realtimeUpdates';
 import { router } from './Router';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Import account service and utils
 import { setAccountService } from './utils/subAdminUtils';
@@ -50,9 +51,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 

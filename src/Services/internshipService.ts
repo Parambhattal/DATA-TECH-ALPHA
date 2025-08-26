@@ -1,4 +1,4 @@
-import { client, databases, DATABASE_ID, INTERNSHIPS_COLLECTION_ID, account, authenticatedRequest } from '../appwriteConfig';
+import { client, databases, DATABASE_ID, INTERNSHIPS_COLLECTION_ID, authenticatedRequest } from '../appwriteConfig';
 import { Query, Models } from 'appwrite';
 
 // Types
@@ -149,7 +149,7 @@ export const updateInternship = async (internshipId: string, updates: Partial<In
   }
 };
 
-export const enrollInInternship = async (internshipId: string, userId: string) => {
+export const enrollInInternship = async (internshipId: string, userEmail: string) => {
   try {
     // First, get the current internship to check max students
     const internship = await databases.getDocument(
@@ -175,10 +175,59 @@ export const enrollInInternship = async (internshipId: string, userId: string) =
       }
     );
 
+    // Send test invitation email
+    await sendTestInvitation(userEmail, internship.title);
+
     return updatedInternship;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to enroll in internship';
     console.error('Error enrolling in internship:', errorMessage);
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Sends a test invitation email to the candidate using Appwrite's email service
+ * @param email - Candidate's email address
+ * @param internshipName - Name of the internship
+ */
+export const sendTestInvitation = async (email: string, internshipName: string) => {
+  try {
+    // Create the test link (update with your actual test URL structure)
+    const testLink = `${window.location.origin}/internship-test/${internshipName.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    // In a real implementation, you would use Appwrite's Messaging service or a cloud function
+    // to send the email. This is a placeholder for that implementation.
+    console.log('Sending test invitation to:', email);
+    console.log('Test link:', testLink);
+    
+    // Example of how you might call an Appwrite Function to send the email
+    // const functions = new Functions(client);
+    // const response = await functions.createExecution(
+    //   'YOUR_FUNCTION_ID',
+    //   JSON.stringify({
+    //     email,
+    //     subject: `Link for Internship entrance Test - ${internshipName}`,
+    //     message: `
+    //       <p>Hello,</p>
+    //       <p>This mail was sent to you regarding the <b>Internship Entrance Exam Test</b> for <b>${internshipName}</b> conducted by <b>DataTech Alpha Pvt. Ltd.</b>.</p>
+    //       <p><a href="${testLink}" target="_blank" style="font-size: 14px; font-family: Inter, sans-serif; color: #ffffff; text-decoration: none; background-color: #2D2D31; border-radius: 8px; padding: 9px 14px; border: 1px solid #414146; display: inline-block; text-align:center; box-sizing: border-box;">Start Your Test</a></p>
+    //       <p>Your online exam link will be active for 24 hours.</p>
+    //       <p style="margin-bottom: 32px">
+    //           Thanks,<br/>
+    //           DataTech Alpha Team
+    //       </p>
+    //     `,
+    //     sender: 'hr@datatechalpha.com',
+    //     senderName: 'DATA TECH ALPHA'
+    //   })
+    // );
+    
+    // For now, we'll return a mock response
+    return { success: true, message: 'Test invitation email would be sent here' };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send test invitation';
+    console.error('Error sending test invitation:', errorMessage);
     throw new Error(errorMessage);
   }
 };

@@ -6,6 +6,10 @@ import StudentsPage from '@/pages/admin/Students';
 import CoursesPage from '@/pages/admin/Courses';
 import NotificationsPage from '@/pages/admin/Notifications';
 import VideoReviewPage from '@/pages/admin/VideoReview';
+import ExamRegistrationsTest from '@/pages/admin/ExamRegistrationsTest';
+import TestsAdmin from '@/pages/admin/TestsAdmin';
+import DebugAuth from '@/pages/admin/DebugAuth';
+import InternExams from '@/pages/admin/InternExams';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 const adminRoutes: RouteObject[] = [
@@ -40,6 +44,22 @@ const adminRoutes: RouteObject[] = [
       {
         path: 'video-review',
         element: <VideoReviewPage />,
+      },
+      {
+        path: 'exam-registrations-test',
+        element: <ExamRegistrationsTest />,
+      },
+      {
+        path: 'debug-auth',
+        element: <DebugAuth />,
+      },
+      {
+        path: 'tests',
+        element: <TestsAdmin />,
+      },
+      {
+        path: 'intern-exams',
+        element: <InternExams />,
       },
     ],
   },

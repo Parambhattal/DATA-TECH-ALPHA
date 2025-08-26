@@ -768,7 +768,11 @@ const TestConductor: React.FC = () => {
         }`}>
           <h3 className="text-lg font-semibold mb-4">{t('testInstructions')}</h3>
           <ul className="space-y-3">
-            {selectedTest.instructions.map((instruction, index) => (
+            {(selectedTest.instructions || [
+              'Read each question carefully before answering.',
+              'You cannot go back to previous questions once answered.',
+              'The test will auto-submit when time expires.'
+            ]).map((instruction, index) => (
               <li key={index} className="flex items-start">
                 <span className="mr-2">•</span>
                 <span>{instruction}</span>

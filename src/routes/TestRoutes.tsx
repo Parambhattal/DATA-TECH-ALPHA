@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import TestsAdmin from '../pages/admin/TestsAdmin';
 import TestForm from '../components/admin/TestForm';
+import ExamPage from '../pages/ExamPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const TestRoutes: React.FC = () => {
@@ -31,6 +32,7 @@ const TestRoutes: React.FC = () => {
           </ProtectedRoute>
         } 
       />
+      <Route path="/take/:testId" element={<ExamPage />} />
       <Route path="*" element={<Navigate to="/admin/tests" replace />} />
     </Routes>
   );

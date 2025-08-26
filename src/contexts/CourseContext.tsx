@@ -44,7 +44,7 @@ export const CourseProvider: React.FC<{ children: ReactNode; initialCourse?: Cou
   }, [urlCourseId]);
 
   // Use either the URL courseId or the initialCourse's id
-  const courseId = currentCourseId;
+  const courseId = currentCourseId?.toLowerCase().trim();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -82,10 +82,26 @@ export const CourseProvider: React.FC<{ children: ReactNode; initialCourse?: Cou
           title: c.title
         })));
         
-        // Try to find the course by ID or courseId
-        const foundCourse = allCoursesFlat.find(course => 
-          course.id === courseId || course.courseId === courseId
-        );
+        // Normalize IDs for case-insensitive comparison
+        const normalizedCourseId = courseId?.toLowerCase().trim();
+        console.log('Normalized course ID for search:', normalizedCourseId);
+        
+        // Try to find the course by ID or courseId (case-insensitive)
+        const foundCourse = allCoursesFlat.find(course => {
+          const match = 
+            course.id?.toLowerCase() === normalizedCourseId || 
+            course.courseId?.toLowerCase() === normalizedCourseId;
+          
+          if (match) {
+            console.log('Found matching course:', {
+              courseId: course.id,
+              courseCourseId: course.courseId,
+              title: course.title
+            });
+          }
+          
+          return match;
+        });
 
         console.log('Course search results:', {
           searchId: courseId,
@@ -103,12 +119,17 @@ export const CourseProvider: React.FC<{ children: ReactNode; initialCourse?: Cou
             id: foundCourse.id,
             courseId: foundCourse.courseId || foundCourse.id
           };
-          console.log('Setting course:', courseWithIds);
+          console.log('Successfully loaded course:', {
+            id: courseWithIds.id,
+            courseId: courseWithIds.courseId,
+            title: courseWithIds.title
+          });
           setCourse(courseWithIds);
           setError(null);
         } else {
-          console.error('Course not found with ID:', courseId);
-          setError(`Course not found (ID: ${courseId})`);
+          const errorMessage = `Course not found with ID: ${courseId}. Available courses: ${allCoursesFlat.map(c => c.id).join(', ')}`;
+          console.error(errorMessage);
+          setError(errorMessage);
           setCourse(null);
         }
       } catch (err) {

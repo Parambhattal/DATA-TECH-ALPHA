@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { createApplication, updatePaymentStatus, ApplicationData } from '../../Services/applicationService';
 import { saveAs } from 'file-saver';
+import { databases } from '../../appwriteConfig';
+import { ID } from 'appwrite';
+import { DATABASE_ID, STUDENTDATA_COLLECTION_ID } from '../../appwriteConfig';
 
 declare global {
   interface Window {
@@ -46,24 +49,55 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
     };
   }, []);
 
+  const saveStudentData = async (paymentId: string) => {
+    if (!user) return;
+    
+    try {
+      // Save student data to Studentdata collection
+      await databases.createDocument(
+        DATABASE_ID,
+        STUDENTDATA_COLLECTION_ID,
+        ID.unique(),
+        {
+          userId: user.$id,
+          email: formData.email,
+          phone: formData.phone,
+          internship_id: internshipId,
+          full_name: formData.full_name,
+          payment_id: paymentId  // Add payment_id to match schema requirements
+        }
+      );
+      console.log('Student data saved successfully');
+    } catch (error) {
+      console.error('Error saving student data:', error);
+      // Don't throw error, continue with payment
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-
     setLoading(true);
     
     try {
-      // First, create the application record
+      // Generate payment ID first
+      const paymentId = 'pay_' + Date.now();
+      
+      // Save student data with payment ID
+      await saveStudentData(paymentId);
+      
+      // Create the application record with correct field names
       const application = await createApplication({
         $id: 'temp_' + Date.now(), // This will be replaced by Appwrite
-        user_id: user.$id,
+        userId: user.$id,
         internship_id: internshipId,
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone,
-        payment_id: 'pending_' + Date.now(),
+        payment_id: paymentId, // Ensure this matches your Appwrite collection schema
         payment_status: 'pending',
         amount: price.toString(),
+        testLink: `https://test-platform.example.com/test/${internshipId}`,
+        applied_at: new Date().toISOString()
       } as ApplicationData);
 
       setApplicationId(application.$id);
@@ -87,7 +121,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
             );
             
             // Generate and download receipt
-            const receiptContent = generateReceipt(updatedApp, formData, response.razorpay_payment_id);
+            const receiptContent = generateReceipt(application, formData, response.razorpay_payment_id, currency);
             const blob = new Blob([receiptContent], { type: 'text/plain;charset=utf-8' });
             saveAs(blob, `Receipt-${response.razorpay_payment_id}.txt`);
             
@@ -243,14 +277,15 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
 const generateReceipt = (
   application: ApplicationData, 
   userData: { full_name: string; email: string; phone: string },
-  paymentId: string
+  paymentId: string,
+  currency: string = 'INR'
 ) => {
   const receipt = [
     '=== Payment Receipt ===',
     `Receipt #: ${paymentId}`,
     `Date: ${new Date().toLocaleString()}`,
     '\n=== Payment Details ===',
-    `Amount: ${application.currency || '₹'} ${application.amount}`,
+    `Amount: ${currency} ${application.amount}`,
     `Status: ${application.payment_status}`,
     `Payment ID: ${paymentId}`,
     '\n=== Internship Details ===',

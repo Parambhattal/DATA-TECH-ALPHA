@@ -112,6 +112,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleChat }) => {
     { title: 'Home', path: '/' },
     { title: 'Courses', path: '/courses' },
     { title: 'Internships', path: '/internships' },
+    { title: 'Scholarship', path: '/scholarship' },
     { title: 'About', path: '/about' },
     { title: 'Practice Tests', path: '/testz' },
     { title: 'Contact', path: '/contact' },
@@ -158,8 +159,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleChat }) => {
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/80 dark:bg-dark-900/80 backdrop-blur shadow-md py-3'
-          : 'bg-transparent py-5'
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur shadow-md py-3'
+          : 'bg-white dark:bg-gray-900 py-5'
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -174,8 +175,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleChat }) => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `font-medium transition-colors hover:text-primary-500 ${
-                  isActive ? 'text-primary-500' : 'text-dark-700 dark:text-white'
+                `font-medium transition-colors hover:text-primary-600 dark:hover:text-primary-400 ${
+                  isActive 
+                    ? 'text-primary-600 dark:text-primary-400 font-semibold' 
+                    : 'text-gray-800 dark:text-gray-100'
                 }`
               }
             >

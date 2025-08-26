@@ -162,8 +162,12 @@ export const useTestResults = ({
     const timeSpent = startTime && endTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const percentage = maxPossibleScore > 0 ? (totalMarks / maxPossibleScore) * 100 : 0;
     
+    // Auto-pass if score is 10 or above, regardless of percentage
+    const isAutoPassed = totalMarks >= 10;
+    const isPassed = isAutoPassed || percentage >= (test.passingScore || 0);
+    
     return {
-      score: totalMarks,
+      score: totalMarks.toString(), // Convert to string to match database schema
       totalMarks,
       maxPossibleScore,
       percentage,
@@ -171,8 +175,8 @@ export const useTestResults = ({
       incorrectAnswers,
       unanswered,
       timeSpent,
-      passingScore: test.passingScore || 0,
-      isPassed: percentage >= (test.passingScore || 0),
+      passingScore: (isAutoPassed ? 10 : (test.passingScore || 0)).toString(), // Convert to string
+      isPassed,
       sectionWiseResults,
       questionWiseResults: questionResults,
     };

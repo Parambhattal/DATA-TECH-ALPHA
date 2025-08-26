@@ -32,7 +32,8 @@ export const TestLayout: React.FC<TestLayoutProps> = ({
         className
       )}
     >
-      <header className="sticky top-0 z-10 border-b">
+      <div className="h-10 w-full bg-transparent"></div> {/* Spacer for website header */}
+      <header className="sticky top-16 z-10 border-b bg-white dark:bg-gray-900">
         {header}
       </header>
       

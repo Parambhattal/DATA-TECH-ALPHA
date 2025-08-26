@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
+import { CardContent, CardFooter, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { formatDuration } from '@/lib/utils';
-import { Clock, FileText, Award } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Clock, FileText, Award, ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface TestCardProps {
   id: string;
@@ -14,6 +14,8 @@ interface TestCardProps {
   category?: string;
   thumbnail?: string | null;
   passingScore?: number;
+  onClick?: () => void;
+  className?: string;
 }
 
 export const TestCard: React.FC<TestCardProps> = ({
@@ -24,29 +26,38 @@ export const TestCard: React.FC<TestCardProps> = ({
   questionCount = 0,
   category = 'Uncategorized',
   thumbnail = null,
-  passingScore = 0
+  passingScore = 0,
+  onClick,
+  className = ''
 }) => {
-  const navigate = useNavigate();
-
-  const handleStartTest = () => {
-    // Navigate to the direct test start URL which will automatically begin the test
-    navigate(`/test/start/${id}`);
-  };
+  // Generate a consistent gradient based on the test ID
+  const gradientColors = [
+    'from-blue-500 to-indigo-600',
+    'from-emerald-500 to-teal-600',
+    'from-purple-500 to-pink-600',
+    'from-amber-500 to-orange-600',
+    'from-rose-500 to-pink-600'
+  ];
+  const gradient = gradientColors[Math.abs(id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % gradientColors.length];
 
   return (
-    <Card 
-      id={id}
-      className="w-full max-w-xs overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+    <div 
+      className={cn(
+        'group relative h-full flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700',
+        'bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300',
+        'transform hover:-translate-y-1',
+        className
+      )}
+      onClick={onClick}
     >
-      {/* Thumbnail */}
-      <div className="relative h-32 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+      {/* Thumbnail with gradient overlay */}
+      <div className="relative h-36 w-full overflow-hidden">
         {thumbnail ? (
           <img 
             src={thumbnail} 
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
-              // Fallback to icon if image fails to load
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const fallback = target.parentElement?.querySelector('.thumbnail-fallback');
@@ -56,52 +67,78 @@ export const TestCard: React.FC<TestCardProps> = ({
             }}
           />
         ) : null}
-        <div className="thumbnail-fallback w-full h-full flex items-center justify-center" style={{ display: thumbnail ? 'none' : 'flex' }}>
-          <FileText className="h-12 w-12 text-primary" />
+        <div 
+          className={cn(
+            'thumbnail-fallback w-full h-full flex items-center justify-center',
+            'bg-gradient-to-br',
+            gradient,
+            { 'hidden': thumbnail }
+          )}
+        >
+          <FileText className="h-12 w-12 text-white opacity-90" />
         </div>
+        
+        {/* Category badge */}
+        {category && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-100 shadow-sm">
+              {category}
+            </span>
+          </div>
+        )}
+        
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
       
-      <CardHeader className="p-4">
-        <h3 className="font-semibold text-lg line-clamp-2">{title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-      </CardHeader>
-      
-      <CardContent className="p-4 pt-0">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{formatDuration(duration)}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span>{questionCount} {questionCount === 1 ? 'Question' : 'Questions'}</span>
-          </div>
-          {passingScore > 0 && (
-            <div className="flex items-center space-x-2">
-              <Award className="h-4 w-4 text-muted-foreground" />
-              <span>Passing: {passingScore}%</span>
+      {/* Card content */}
+      <div className="flex-1 p-5 flex flex-col">
+        <CardHeader className="p-0 mb-3">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight">
+            {title}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+            {description}
+          </p>
+        </CardHeader>
+        
+        <CardContent className="p-0 mt-auto">
+          <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+              <span className="font-medium">{formatDuration(duration)}</span>
             </div>
-          )}
-          {category && (
-            <div className="flex items-center space-x-2">
-              <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
-                {category}
-              </span>
+            <div className="flex items-center">
+              <FileText className="h-4 w-4 mr-2 text-emerald-500 flex-shrink-0" />
+              <span>{questionCount} {questionCount === 1 ? 'Question' : 'Questions'}</span>
             </div>
-          )}
-        </div>
-      </CardContent>
+            {passingScore > 0 && (
+              <div className="flex items-center">
+                <Award className="h-4 w-4 mr-2 text-amber-500 flex-shrink-0" />
+                <span>Passing Score: <span className="font-medium">{passingScore}%</span></span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+        
+        <CardFooter className="p-0 mt-6">
+          <Button 
+            className="w-full group/button" 
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onClick) onClick();
+            }}
+          >
+            Start Test
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/button:translate-x-1" />
+          </Button>
+        </CardFooter>
+      </div>
       
-      <CardFooter className="p-4 pt-0">
-        <Button 
-          className="w-full" 
-          variant="outline"
-          onClick={handleStartTest}
-        >
-          Start Test
-        </Button>
-      </CardFooter>
-    </Card>
+      {/* Hover effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-transparent group-hover:from-blue-500/5 group-hover:via-transparent group-hover:to-transparent transition-all duration-300 pointer-events-none" />
+    </div>
   );
 };
 

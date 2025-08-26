@@ -8,7 +8,7 @@ import type { Internship } from '../internships/[slug]';
 const EditInternshipPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuth();
   
   const [formData, setFormData] = useState<Partial<Internship>>({
     title: '',
@@ -89,10 +89,17 @@ const EditInternshipPage: React.FC = () => {
     }));
   };
   
+  // Check if user is logged in
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setError('You must be logged in to edit an internship');
+    }
+  }, [isAuthenticated]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!currentUser || !id) {
+    if (!isAuthenticated || !currentUser) {
       setError('You must be logged in to edit an internship');
       return;
     }

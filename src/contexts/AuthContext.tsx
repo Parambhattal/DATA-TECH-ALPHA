@@ -133,12 +133,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return false;
     
     try {
+      console.log('[AuthContext] Fetching profile for account ID:', user.accountId);
       const response = await databases.listDocuments<ProfileDoc>(
         DATABASE_ID,
         PROFILE_COLLECTION_ID,
         [Query.equal('accountId', user.accountId)]
       );
       
+      console.log('[AuthContext] Profile query results:', {
+        total: response.total,
+        documents: response.documents
+      });
+
       if (response.documents.length > 0) {
         const userDoc = response.documents[0];
         const isDeactivatedNow = userDoc.is_active === false;
@@ -194,6 +200,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAuthUser = useCallback(async (): Promise<AuthCheckResult> => {
     setIsLoading(true);
     try {
+      console.log('[AuthContext] Checking authentication status...');
       // First check if we have a session cookie
       const sessionCookie = document.cookie
         .split('; ')
@@ -209,6 +216,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!currentAccount) {
         throw new Error('Failed to get account information');
       }
+      
+      console.log('[AuthContext] Active session found, user ID:', currentAccount.$id);
       
       // Get the user's profile
       const profileResponse = await databases.listDocuments<ProfileDoc>(
@@ -277,6 +286,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         is_active: profileDoc?.is_active !== false, // Default to true if not set
         subAdminPermissions: subAdminPermissions
       };
+
+      console.log('[AuthContext] User data loaded:', {
+        id: userData.$id,
+        email: userData.email,
+        role: userData.role,
+        isAdmin: userData.role === 'admin'
+      });
 
       setUser(userData);
       setIsAuthenticated(true);

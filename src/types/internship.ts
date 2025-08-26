@@ -1,4 +1,5 @@
 export interface Internship {
+  $id: string;
   id: string;
   title: string;
   slug: string;

@@ -32,24 +32,69 @@ export const ProtectedRoute = ({
 
   // Check if user has the required role
   const hasRequiredRole = () => {
-    if (!user.role) return false;
+    console.log('Checking required role:', { 
+      hasUser: !!user,
+      userRole: user?.role, 
+      requiredRole,
+      currentPath: window.location.pathname
+    });
+
+    if (!user?.role) {
+      console.log('No user role found');
+      return false;
+    }
     
     // If user is admin, they have access to everything
-    if (user.role === 'admin') return true;
+    if (user.role === 'admin') {
+      console.log('User is admin, access granted');
+      return true;
+    }
     
     // Subadmin has access to subadmin routes and below
-    if (user.role === 'subadmin' && requiredRole !== 'admin') return true;
+    if (user.role === 'subadmin' && requiredRole !== 'admin') {
+      console.log('User is subadmin, access granted');
+      return true;
+    }
     
     // For other roles, check if they match the required role
-    if (requiredRole === 'student') return true; // All logged-in users have student access
-    if (requiredRole === 'teacher' && user.role === 'teacher') return true;
+    if (requiredRole === 'student' || requiredRole === 'user') {
+      console.log('User has student/user access');
+      return true; // All logged-in users have student/user access
+    }
     
+    if (requiredRole === 'teacher' && user.role === 'teacher') {
+      console.log('User is teacher, access granted');
+      return true;
+    }
+    
+    // Check for exact role match
+    if (user.role === requiredRole) {
+      console.log('Exact role match, access granted');
+      return true;
+    }
+    
+    console.log('Role check failed', { 
+      userRole: user.role, 
+      requiredRole,
+      user,
+      location: window.location
+    });
     return false;
   };
 
-  if (!hasRequiredRole()) {
+  const roleCheck = hasRequiredRole();
+  console.log('ProtectedRoute debug:', {
+    isAuthenticated: !!user,
+    userRole: user?.role,
+    requiredRole,
+    hasRequiredRole: roleCheck,
+    currentPath: window.location.pathname
+  });
+
+  if (!roleCheck) {
+    console.log('Redirecting to home due to failed role check');
     // Redirect to home page or show unauthorized page
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" replace state={{ from: location, reason: 'role_check_failed' }} />;
   }
 
   return <>{children}</>;

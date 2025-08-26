@@ -30,6 +30,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "../../contexts/AuthContext";
 import { createTest, updateTest, getTestById } from '../../Services/testService';
+import ShareExamLink from '../test/ShareExamLink';
 
 interface OptionType {
   id: string | number;
@@ -376,6 +377,11 @@ const TestForm: React.FC = () => {
         }}
       >
         <Card title="Test Details" style={{ marginBottom: '24px' }}>
+        {isEditing && testId && (
+          <div style={{ marginBottom: '24px' }}>
+            <ShareExamLink testId={testId} />
+          </div>
+        )}
           <Row gutter={[16, 16]}>
             <Col span={24}>
               <Form.Item

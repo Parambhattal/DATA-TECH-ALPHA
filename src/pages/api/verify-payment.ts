@@ -4,18 +4,29 @@ import crypto from 'crypto';
 import { savePaymentToAppwrite } from '@/lib/appwrite';
 
 // Initialize Razorpay with environment variables
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID || '';
+const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || '';
+
 const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+  key_id: razorpayKeyId,
+  key_secret: razorpayKeySecret,
 });
+
+// Log Razorpay configuration
+console.log('Razorpay verify payment initialized with key_id:', 
+  razorpayKeyId ? '***' + razorpayKeyId.slice(-4) : 'MISSING');
+console.log('Environment:', process.env.NODE_ENV);
 
 // Type for the request body
 type VerifyPaymentRequest = {
   razorpay_payment_id: string;
   razorpay_order_id: string;
   razorpay_signature: string;
-  userId?: string;
+  userId: string;
   courseId?: string;
+  internshipId?: string;
+  amount: number;
+  currency: string;
   [key: string]: any;
 };
 
@@ -52,14 +63,28 @@ export default async function handler(
   }
 
   try {
-    const body = req.body as VerifyPaymentRequest;
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, ...rest } = body;
+    const { 
+      razorpay_order_id, 
+      razorpay_payment_id, 
+      razorpay_signature, 
+      userId, 
+      courseId, 
+      internshipId, 
+      amount, 
+      currency 
+    } = req.body as VerifyPaymentRequest;
 
-    // Validate required parameters
-    if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !userId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters: razorpay_payment_id, razorpay_order_id, razorpay_signature',
+        error: 'Missing required payment verification data',
+      });
+    }
+
+    if (!courseId && !internshipId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Either courseId or internshipId must be provided',
       });
     }
 
@@ -81,29 +106,23 @@ export default async function handler(
     // Get payment details from Razorpay
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
     
-    // Prepare payment data for Appwrite
-    const paymentData = {
-      userId: rest.userId || 'anonymous',
-      courseId: rest.courseId || 'unknown',
+    // Save payment to Appwrite
+    await savePaymentToAppwrite({
+      userId,
+      ...(courseId && { courseId }),
+      ...(internshipId && { internshipId }),
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
-      amount: payment.amount / 100, // Convert from paise to currency unit
-      currency: payment.currency,
-      status: payment.status,
-      receipt: payment.receipt || `rcpt_${Date.now()}`,
+      amount: amount || 0,
+      currency: currency || 'INR',
+      status: 'captured',
+      receipt: `receipt_${razorpay_payment_id}`,
       metadata: {
-        ...rest,
-        paymentMethod: payment.method,
-        bank: payment.bank,
-        cardId: payment.card_id,
-        vpa: payment.vpa,
-        wallet: payment.wallet,
-        verifiedAt: new Date().toISOString(),
+        razorpay_signature,
+        ...(req.body.metadata || {}),
       },
-    };
-
-    // Save payment to Appwrite
-    await savePaymentToAppwrite(paymentData);
+      type: courseId ? 'course' : 'internship',
+    });
 
     // Return success response
     return res.status(200).json({

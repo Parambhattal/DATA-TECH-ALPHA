@@ -3,7 +3,7 @@ import { ID } from 'appwrite';
 
 export interface ApplicationData {
   $id: string;
-  user_id: string;
+  userId: string;  // Changed from user_id to userId to match collection requirements
   internship_id: string;
   full_name: string;
   email: string;
@@ -11,6 +11,7 @@ export interface ApplicationData {
   payment_id: string;
   payment_status: 'pending' | 'completed' | 'failed';
   amount: string;
+  testLink: string;
   applied_at: string;
 }
 

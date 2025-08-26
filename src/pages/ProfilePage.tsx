@@ -860,6 +860,12 @@ const ProfilePage: React.FC = () => {
               </div>
             )}
 
+            {activeTab === 'test-report' && !['admin', 'subadmin', 'teacher'].includes(user.role) && (
+              <div className="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-gray-200 dark:border-dark-700 p-6">
+                <h2 className="text-2xl font-bold dark:text-white mb-6">My Test Reports</h2>
+                <TestReport />
+              </div>
+            )}
 
 
             {activeTab === 'profile' && (

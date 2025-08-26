@@ -46,16 +46,32 @@ export const createInternship = async (internshipData: CreateInternshipData) => 
   }
 };
 
+// Function to filter out Appwrite metadata fields
+const filterAppwriteMetadata = (data: any) => {
+  const metadataFields = ['$id', '$collectionId', '$databaseId', '$createdAt', '$updatedAt', '$permissions'];
+  const filtered: any = {};
+  
+  for (const key in data) {
+    if (!metadataFields.includes(key) && !key.startsWith('$')) {
+      filtered[key] = data[key];
+    }
+  }
+  
+  return filtered;
+};
+
 export const updateInternship = async (internshipId: string, updates: Partial<CreateInternshipData>) => {
   try {
+    // Filter out any Appwrite metadata fields from updates
+    const filteredUpdates = filterAppwriteMetadata(updates);
+    
+    console.log('Updating internship with data:', filteredUpdates);
+    
     const response = await databases.updateDocument(
       DATABASE_ID,
       INTERNSHIPS_COLLECTION_ID,
       internshipId,
-      {
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      }
+      filteredUpdates
     );
 
     return response;
