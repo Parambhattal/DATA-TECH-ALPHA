@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, Container, Typography, Grid, Card, CardContent, Button, TextField, InputAdornment, MenuItem, Select, FormControl, SelectChangeEvent, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, TextareaAutosize } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardContent, Button, TextField, InputAdornment, MenuItem, Select, FormControl, SelectChangeEvent, IconButton, Chip } from '@mui/material';
+import { ScholarshipApplicationForm } from '../components/scholarship/ScholarshipApplicationForm';
 import { styled } from '@mui/material/styles';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Search, FilterAlt, School, EmojiEvents, Info, ArrowForward } from '@mui/icons-material';
@@ -44,23 +45,17 @@ interface Scholarship {
 }
 
 const ScholarshipPage: React.FC = () => {
-  const [openApplicationForm, setOpenApplicationForm] = useState(false);
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
+  const [applicationFormOpen, setApplicationFormOpen] = useState(false);
 
   const handleOpenApplicationForm = (scholarship: Scholarship) => {
     setSelectedScholarship(scholarship);
-    setOpenApplicationForm(true);
+    setApplicationFormOpen(true);
   };
 
   const handleCloseApplicationForm = () => {
-    setOpenApplicationForm(false);
+    setApplicationFormOpen(false);
     setSelectedScholarship(null);
-  };
-
-  const handleSubmitApplication = () => {
-    // Handle form submission logic here
-    toast.success('Application submitted successfully!');
-    handleCloseApplicationForm();
   };
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('all');
@@ -513,130 +508,17 @@ const ScholarshipPage: React.FC = () => {
         </Box>
       </Container>
 
-      {/* Application Form Dialog */}
-      <Dialog 
-        open={openApplicationForm} 
-        onClose={handleCloseApplicationForm}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ 
-          bgcolor: 'primary.main', 
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '1.5rem',
-          py: 2,
-          px: 3
-        }}>
-          {selectedScholarship ? `Apply for ${selectedScholarship.title}` : 'Scholarship Application'}
-        </DialogTitle>
-        <DialogContent sx={{ py: 4, px: 3 }}>
-          <form>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  variant="outlined"
-                  required
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  type="email"
-                  variant="outlined"
-                  required
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  type="tel"
-                  variant="outlined"
-                  required
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Current Institution"
-                  variant="outlined"
-                  required
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Course/Program"
-                  variant="outlined"
-                  required
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth margin="normal">
-                  <Typography variant="subtitle2" gutterBottom>
-                    Why should you receive this scholarship? (Max 500 words)
-                  </Typography>
-                  <TextareaAutosize
-                    minRows={4}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      border: '1px solid rgba(0, 0, 0, 0.23)',
-                      fontFamily: 'inherit',
-                      fontSize: '1rem',
-                      resize: 'vertical'
-                    }}
-                    required
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  size="large"
-                  onClick={handleSubmitApplication}
-                  sx={{
-                    mt: 2,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                    textTransform: 'none',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-                    },
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  Submit Application
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, justifyContent: 'flex-start' }}>
-          <Button 
-            onClick={handleCloseApplicationForm}
-            color="primary"
-            sx={{ textTransform: 'none' }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Scholarship Application Form Dialog */}
+      {selectedScholarship && (
+        <ScholarshipApplicationForm
+          open={applicationFormOpen}
+          onClose={handleCloseApplicationForm}
+          scholarshipId={selectedScholarship.id}
+          scholarshipTitle={selectedScholarship.title}
+          price={parseInt(selectedScholarship.amount.replace(/[^0-9]/g, ''))}
+          currency="INR"
+        />
+      )}
     </Box>
   );
 };
